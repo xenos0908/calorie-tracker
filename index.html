@@ -151,22 +151,22 @@
             <p>Total Calories: <span id="total-calories">0</span></p>
             <p>Total Protein: <span id="total-protein">0</span></p>
         </div>
+
         <div id="calorie-table-wrapper">
             <table id="calorie-table">
                 <thead>
                     <tr>
-                    <th>Time</th>
-                    <th>Food Item</th>
-                    <th>Calories</th>
-                    <th>Protein</th>
+                        <th>Time</th>
+                        <th>Food Item</th>
+                        <th>Calories</th>
+                        <th>Protein</th>
                     </tr>
                 </thead>
                 <tbody id="calorie-rows">
                 </tbody>
             </table>
-        </div>
-
-
+        </div>        
+        
         <!-- Canvas for the chart -->
         <canvas id="calorie-chart"></canvas>
         <canvas id="protein-chart"></canvas>
@@ -383,12 +383,6 @@
             localStorage.removeItem('calorieTrackerData');
             location.reload();
         }
-
-        // Enable drag-and-drop functionality
-        const rows = document.querySelector('#calorie-rows');
-        rows.addEventListener('dragstart', (event) => {
-            event.dataTransfer.setData('text/plain', event.target.id);
-        });
 
         loadHistory();
     </script>
