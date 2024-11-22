@@ -244,7 +244,7 @@
             proteinChart.data.datasets[0].data = proteinData;
             proteinChart.update();
         }
-        
+
         // Save data to localStorage
         function saveData() {
             const historyRows = Array.from(document.querySelectorAll('#calorie-rows tr'));
@@ -306,68 +306,52 @@
         }
 
         function removeRow(event) {
-            const row = event.target.closest('tr');
-            const calories = parseInt(row.children[2].textContent, 10);
-            const protein = parseInt(row.children[3].textContent, 10);
-            const time = row.children[0].textContent;
+        const row = event.target.closest('tr');
+        const calories = parseInt(row.children[2].textContent, 10);
+        const protein = parseInt(row.children[3].textContent, 10);
+        const time = row.children[0].textContent;
 
-            // Adjust totals when removing a row
-            totalCalories -= calories;
-            totalProtein -= protein;
+        // Adjust totals when removing a row
+        totalCalories -= calories;
+        totalProtein -= protein;
 
-            document.getElementById('total-calories').textContent = totalCalories;
-            document.getElementById('total-protein').textContent = totalProtein;
+        document.getElementById('total-calories').textContent = totalCalories;
+        document.getElementById('total-protein').textContent = totalProtein;
 
-            // Remove the row from the table
-            row.remove();
+        // Remove the row from the table
+        row.remove();
 
-            // Update the chart data
-            timeLabels = [];
-            calorieData = [];
-            proteinData = [];
+        // Update the chart data
+        timeLabels = [];
+        calorieData = [];
+        proteinData = [];
 
-            // Rebuild the chart data from the remaining rows
-            const rows = document.querySelectorAll('#calorie-rows tr');
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                const rowTime = cells[0].textContent;
-                const rowCalories = parseInt(cells[2].textContent, 10);
-                const rowProtein = parseInt(cells[3].textContent, 10);
+        // Rebuild the chart data from the remaining rows
+        const rows = document.querySelectorAll('#calorie-rows tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const rowTime = cells[0].textContent;
+            const rowCalories = parseInt(cells[2].textContent, 10);
+            const rowProtein = parseInt(cells[3].textContent, 10);
 
-                timeLabels.push(rowTime);
-                calorieData.push(rowCalories);
-                proteinData.push(rowProtein);
-            });
-
-            // Update the charts
-            calorieChart.data.labels = timeLabels;
-            calorieChart.data.datasets[0].data = calorieData;
-            calorieChart.update();
-
-            proteinChart.data.labels = timeLabels;
-            proteinChart.data.datasets[0].data = proteinData;
-            proteinChart.update();
-
-            saveData();
-        }
-
-        function clearHistory() {
-            localStorage.removeItem('calorieTrackerData');
-            location.reload();
-        }
-
-        // Enable drag-and-drop functionality
-        const rows = document.querySelector('#calorie-rows');
-        rows.addEventListener('dragstart', (event) => {
-            event.dataTransfer.setData('text/plain', event.target.id);
+            timeLabels.push(rowTime);
+            calorieData.push(rowCalories);
+            proteinData.push(rowProtein);
         });
 
-        loadHistory();
-    </script>   // Adjust totals when removing a row
-            totalCalories -= calories;
-            totalProtein -= protein;
+        // Update the charts
+        calorieChart.data.labels = timeLabels;
+        calorieChart.data.datasets[0].data = calorieData;
+        calorieChart.update();
 
-            document.getElementById('total-calories').textContent = totalCalories;
-         
+        proteinChart.data.labels = timeLabels;
+        proteinChart.data.datasets[0].data = proteinData;
+        proteinChart.update();
+
+        saveData();
+    }
+
+        loadHistory();
+    </script>
 </body>
 </html>
