@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calorie Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -78,6 +79,24 @@
         #calorie-table th {
             background-color: #202030;
         }
+
+        #calorie-table button {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        #calorie-table button:hover {
+            background-color: #c9302c;
+        }
+
+        canvas {
+            max-width: 100%;
+            margin-top: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -85,6 +104,10 @@
         <h1>Calorie Tracker</h1>
     </header>
     <main>
+        <div class="form-group">
+            <label for="time-item">Time</label>
+            <input type="time" id="time" placeholder="Enter Time">
+        </div> 
         <div class="form-group">
             <label for="food-item">Food Item</label>
             <input type="text" id="food-item" placeholder="Enter food name">
@@ -107,20 +130,79 @@
             <table id="calorie-table">
                 <thead>
                     <tr>
+                        <th>Time</th>
                         <th>Food Item</th>
                         <th>Calories</th>
                         <th>Protein</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="calorie-rows">
                 </tbody>
             </table>
         </div>
+
+        <!-- Canvas for the chart -->
+        <canvas id="calorie-chart"></canvas>
+        <canvas id="protein-chart"></canvas>
     </main>
 
     <script>
         let totalCalories = 0;
         let totalProtein = 0;
+        let timeLabels = []; // Store time labels for the graph
+        let calorieData = []; // Store total calories data for the graph
+        let proteinData = []; // Store total protein data for the graph
+
+        const ctx = document.getElementById('calorie-chart').getContext('2d');
+        const calorieChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: [
+                    {
+                        label: 'Total Calories',
+                        data: calorieData,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const ptx = document.getElementById('protein-chart').getContext('2d');
+        const proteinChart = new Chart(ptx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: [
+                    {
+                        label: 'Total Protein',
+                        data: proteinData,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
 
         // Load history from localStorage
         function loadHistory() {
@@ -135,22 +217,44 @@
             document.getElementById('total-calories').textContent = totalCalories;
             document.getElementById('total-protein').textContent = totalProtein;
 
-            data.history.forEach(item => {
-                const tableRow = document.createElement('tr');
-                tableRow.innerHTML = `<td>${item.food}</td><td>${item.calories}</td><td>${item.protein}</td>`;
-                document.getElementById('calorie-rows').appendChild(tableRow);
-            });
-        }
+            // Reset chart data arrays to avoid duplicates
+            timeLabels = [];
+            calorieData = [];
+            proteinData = [];
 
+            data.history.forEach(item => {
+                // Add items to the table with a "Remove" button and make rows draggable
+                const tableRow = document.createElement('tr');
+                tableRow.setAttribute('draggable', 'true');
+                tableRow.innerHTML = `<td>${item.time}</td><td>${item.food}</td><td>${item.calories}</td><td>${item.protein}</td><td><button onclick="removeRow(event)">Remove</button></td>`;
+                document.getElementById('calorie-rows').appendChild(tableRow);
+
+                // Update the graph data arrays
+                timeLabels.push(item.time);
+                calorieData.push(item.calories);  // Use individual calories here
+                proteinData.push(item.protein);   // Use individual protein here
+            });
+
+            // Update the chart with the loaded data
+            calorieChart.data.labels = timeLabels;
+            calorieChart.data.datasets[0].data = calorieData;
+            calorieChart.update();
+
+            proteinChart.data.labels = timeLabels;
+            proteinChart.data.datasets[0].data = proteinData;
+            proteinChart.update();
+        }
+        
         // Save data to localStorage
         function saveData() {
             const historyRows = Array.from(document.querySelectorAll('#calorie-rows tr'));
             const history = historyRows.map(row => {
                 const cells = row.querySelectorAll('td');
                 return {
-                    food: cells[0].textContent,
-                    calories: parseInt(cells[1].textContent, 10),
-                    protein: parseInt(cells[2].textContent, 10)
+                    time: cells[0].textContent,
+                    food: cells[1].textContent,
+                    calories: parseInt(cells[2].textContent, 10),
+                    protein: parseInt(cells[3].textContent, 10)
                 };
             });
 
@@ -167,8 +271,9 @@
             const foodItem = document.getElementById('food-item').value;
             const calories = parseInt(document.getElementById('calories').value, 10);
             const protein = parseInt(document.getElementById('protein').value, 10);
+            const time = document.getElementById('time').value;
 
-            if (!foodItem || isNaN(calories) || calories < 0 || isNaN(protein) || protein < 0) {
+            if (!time || !foodItem || isNaN(calories) || calories < 0 || isNaN(protein) || protein < 0) {
                 alert('Please enter valid inputs.');
                 return;
             }
@@ -180,12 +285,68 @@
             document.getElementById('total-protein').textContent = totalProtein;
 
             const tableRow = document.createElement('tr');
-            tableRow.innerHTML = `<td>${foodItem}</td><td>${calories}</td><td>${protein}</td>`;
+            tableRow.setAttribute('draggable', 'true');
+            tableRow.innerHTML = `<td>${time}</td><td>${foodItem}</td><td>${calories}</td><td>${protein}</td><td><button onclick="removeRow(event)">Remove</button></td>`;
             document.getElementById('calorie-rows').appendChild(tableRow);
+
+            // Update the graph data arrays
+            timeLabels.push(time);
+            calorieData.push(totalCalories);
+            proteinData.push(totalProtein);
+
+            calorieChart.update();
+            proteinChart.update();
 
             document.getElementById('food-item').value = '';
             document.getElementById('calories').value = '';
             document.getElementById('protein').value = '';
+            document.getElementById('time').value = '';
+
+            saveData();
+        }
+
+        function removeRow(event) {
+            const row = event.target.closest('tr');
+            const calories = parseInt(row.children[2].textContent, 10);
+            const protein = parseInt(row.children[3].textContent, 10);
+            const time = row.children[0].textContent;
+
+            // Adjust totals when removing a row
+            totalCalories -= calories;
+            totalProtein -= protein;
+
+            document.getElementById('total-calories').textContent = totalCalories;
+            document.getElementById('total-protein').textContent = totalProtein;
+
+            // Remove the row from the table
+            row.remove();
+
+            // Update the chart data
+            timeLabels = [];
+            calorieData = [];
+            proteinData = [];
+
+            // Rebuild the chart data from the remaining rows
+            const rows = document.querySelectorAll('#calorie-rows tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const rowTime = cells[0].textContent;
+                const rowCalories = parseInt(cells[2].textContent, 10);
+                const rowProtein = parseInt(cells[3].textContent, 10);
+
+                timeLabels.push(rowTime);
+                calorieData.push(rowCalories);
+                proteinData.push(rowProtein);
+            });
+
+            // Update the charts
+            calorieChart.data.labels = timeLabels;
+            calorieChart.data.datasets[0].data = calorieData;
+            calorieChart.update();
+
+            proteinChart.data.labels = timeLabels;
+            proteinChart.data.datasets[0].data = proteinData;
+            proteinChart.update();
 
             saveData();
         }
@@ -195,7 +356,18 @@
             location.reload();
         }
 
+        // Enable drag-and-drop functionality
+        const rows = document.querySelector('#calorie-rows');
+        rows.addEventListener('dragstart', (event) => {
+            event.dataTransfer.setData('text/plain', event.target.id);
+        });
+
         loadHistory();
-    </script>
+    </script>   // Adjust totals when removing a row
+            totalCalories -= calories;
+            totalProtein -= protein;
+
+            document.getElementById('total-calories').textContent = totalCalories;
+         
 </body>
 </html>
