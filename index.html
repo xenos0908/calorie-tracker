@@ -319,8 +319,11 @@
             document.getElementById('total-protein').textContent = totalProtein;
 
             const tableRow = document.createElement('tr');
-            tableRow.setAttribute('draggable', 'true');
-            tableRow.innerHTML = `<td>${time}</td><td>${foodItem}</td><td>${calories}</td><td>${protein}</td><td><button onclick="removeRow(event)">Remove</button></td>`;
+            tableRow.innerHTML = 
+                `<td data-label="Time">${time}</td>
+                <td data-label="Food Item">${foodItem}</td>
+                <td data-label="Calories">${calories}</td>
+                <td data-label="Protein">${protein}</td>`;
             document.getElementById('calorie-rows').appendChild(tableRow);
 
             // Update the graph data arrays
