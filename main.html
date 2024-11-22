@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorie Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #101018;
+        }
+
+        header {
+            background-color: #202030;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        main {
+            padding: 1rem;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #101018;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #202030;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #130080;
+        }
+
+        #stats {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #202030;
+            border: 1px solid #101018;
+            border-radius: 4px;
+            color: white;
+        }
+
+        #calorie-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        #calorie-table th, #calorie-table td {
+            border: 1px solid #101018;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        #calorie-table th {
+            background-color: #202030;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Calorie Tracker</h1>
+    </header>
+    <main>
+        <div class="form-group">
+            <label for="food-item">Food Item</label>
+            <input type="text" id="food-item" placeholder="Enter food name">
+        </div>
+        <div class="form-group">
+            <label for="calories">Calories</label>
+            <input type="number" id="calories" placeholder="Enter calorie count">
+        </div>
+        <div class="form-group">
+            <label for="protein">Protein</label>
+            <input type="number" id="protein" placeholder="Enter protein amount (in grams)">
+        </div>
+        <button onclick="addCalorie()">Add</button>
+        <button onclick="clearHistory()">Clear History</button>
+
+        <div id="stats">
+            <h2>Statistics</h2>
+            <p>Total Calories: <span id="total-calories">0</span></p>
+            <p>Total Protein: <span id="total-protein">0</span></p>
+            <table id="calorie-table">
+                <thead>
+                    <tr>
+                        <th>Food Item</th>
+                        <th>Calories</th>
+                        <th>Protein</th>
+                    </tr>
+                </thead>
+                <tbody id="calorie-rows">
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        let totalCalories = 0;
+        let totalProtein = 0;
+
+        // Load history from localStorage
+        function loadHistory() {
+            const data = JSON.parse(localStorage.getItem('calorieTrackerData')) || {
+                totalCalories: 0,
+                totalProtein: 0,
+                history: []
+            };
+
+            totalCalories = data.totalCalories;
+            totalProtein = data.totalProtein;
+            document.getElementById('total-calories').textContent = totalCalories;
+            document.getElementById('total-protein').textContent = totalProtein;
+
+            data.history.forEach(item => {
+                const tableRow = document.createElement('tr');
+                tableRow.innerHTML = `<td>${item.food}</td><td>${item.calories}</td><td>${item.protein}</td>`;
+                document.getElementById('calorie-rows').appendChild(tableRow);
+            });
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            const historyRows = Array.from(document.querySelectorAll('#calorie-rows tr'));
+            const history = historyRows.map(row => {
+                const cells = row.querySelectorAll('td');
+                return {
+                    food: cells[0].textContent,
+                    calories: parseInt(cells[1].textContent, 10),
+                    protein: parseInt(cells[2].textContent, 10)
+                };
+            });
+
+            const data = {
+                totalCalories,
+                totalProtein,
+                history
+            };
+
+            localStorage.setItem('calorieTrackerData', JSON.stringify(data));
+        }
+
+        function addCalorie() {
+            const foodItem = document.getElementById('food-item').value;
+            const calories = parseInt(document.getElementById('calories').value, 10);
+            const protein = parseInt(document.getElementById('protein').value, 10);
+
+            if (!foodItem || isNaN(calories) || calories < 0 || isNaN(protein) || protein < 0) {
+                alert('Please enter valid inputs.');
+                return;
+            }
+
+            totalCalories += calories;
+            totalProtein += protein;
+
+            document.getElementById('total-calories').textContent = totalCalories;
+            document.getElementById('total-protein').textContent = totalProtein;
+
+            const tableRow = document.createElement('tr');
+            tableRow.innerHTML = `<td>${foodItem}</td><td>${calories}</td><td>${protein}</td>`;
+            document.getElementById('calorie-rows').appendChild(tableRow);
+
+            document.getElementById('food-item').value = '';
+            document.getElementById('calories').value = '';
+            document.getElementById('protein').value = '';
+
+            saveData();
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('calorieTrackerData');
+            location.reload();
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>
