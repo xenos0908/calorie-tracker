@@ -68,6 +68,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
+            overflow-x: auto; /* Allow horizontal scrolling on smaller screens */
         }
 
         #calorie-table th, #calorie-table td {
@@ -79,6 +80,39 @@
         #calorie-table th {
             background-color: #202030;
         }
+
+        /* Make table more mobile-friendly */
+        @media (max-width: 600px) {
+            #calorie-table {
+                display: block;
+                overflow-x: auto; /* Allows horizontal scroll if the table is too wide */
+                white-space: nowrap; /* Prevents text from wrapping inside the table */
+            }
+
+            #calorie-table th, #calorie-table td {
+                display: block;
+                text-align: right;
+                width: 100%;
+            }
+
+            #calorie-table th {
+                text-align: left;
+                padding-left: 1rem;
+            }
+
+            #calorie-table td {
+                text-align: left;
+                padding-left: 1rem;
+            }
+
+            #calorie-table td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                display: inline-block;
+                width: 150px;
+            }
+        }
+
 
         #calorie-table button {
             background-color: #d9534f;
