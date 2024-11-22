@@ -68,41 +68,36 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
-            overflow-x: auto; /* Allow horizontal scrolling on smaller screens */
         }
 
         #calorie-table th, #calorie-table td {
             border: 1px solid #101018;
             padding: 0.75rem;
             text-align: left;
+            background-color: #202030;
+            color: white;
         }
 
         #calorie-table th {
             background-color: #202030;
         }
 
-        /* Make table more mobile-friendly */
+        /* Mobile View */
         @media (max-width: 600px) {
+            #calorie-table-wrapper {
+                overflow-x: auto; /* Allow horizontal scrolling */
+                -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            }
+
             #calorie-table {
+                width: 100%;
+                min-width: 600px; /* Set a minimum width to allow scrolling */
                 display: block;
-                overflow-x: auto; /* Allows horizontal scroll if the table is too wide */
-                white-space: nowrap; /* Prevents text from wrapping inside the table */
             }
 
             #calorie-table th, #calorie-table td {
-                display: block;
-                text-align: right;
-                width: 100%;
-            }
-
-            #calorie-table th {
-                text-align: left;
-                padding-left: 1rem;
-            }
-
-            #calorie-table td {
-                text-align: left;
-                padding-left: 1rem;
+                display: inline-block; /* Make each cell block to avoid breaking layout */
+                width: 150px; /* Adjust width to your preference */
             }
 
             #calorie-table td::before {
@@ -111,16 +106,10 @@
                 display: inline-block;
                 width: 150px;
             }
-        }
 
-
-        #calorie-table button {
-            background-color: #d9534f;
-            color: white;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            cursor: pointer;
-            border-radius: 4px;
+            #calorie-table td {
+                text-align: left;
+            }
         }
 
         #calorie-table button:hover {
@@ -161,20 +150,22 @@
             <h2>Statistics</h2>
             <p>Total Calories: <span id="total-calories">0</span></p>
             <p>Total Protein: <span id="total-protein">0</span></p>
+        </div>
+        <div id="calorie-table-wrapper">
             <table id="calorie-table">
                 <thead>
                     <tr>
-                        <th>Time</th>
-                        <th>Food Item</th>
-                        <th>Calories</th>
-                        <th>Protein</th>
-                        <th>Actions</th>
+                    <th>Time</th>
+                    <th>Food Item</th>
+                    <th>Calories</th>
+                    <th>Protein</th>
                     </tr>
                 </thead>
                 <tbody id="calorie-rows">
                 </tbody>
             </table>
         </div>
+
 
         <!-- Canvas for the chart -->
         <canvas id="calorie-chart"></canvas>
@@ -400,11 +391,6 @@
         });
 
         loadHistory();
-    </script>   // Adjust totals when removing a row
-            totalCalories -= calories;
-            totalProtein -= protein;
-
-            document.getElementById('total-calories').textContent = totalCalories;
-         
+    </script>
 </body>
 </html>
