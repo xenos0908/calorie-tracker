@@ -27,15 +27,6 @@
             margin: auto;
         }
         
-        #scanner {
-            border: 2px solid #130080;
-            border-radius: 8px;
-            margin-top: 1rem;
-            width: 100%; /* Ensure it takes full width */
-            height: 300px; /* Set a height */
-            background-color: #000; /* Optional, to show black if video fails to load */
-        }
-
         #tabs {
             display: flex;
             justify-content: space-around;
@@ -60,6 +51,25 @@
 
         #previous-ingredients {
             color:white;
+        }
+
+        #scanner {
+            border: 2px solid #130080;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        #ocr-result, #scanner-result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        #image-capture {
+            margin-top: 20px;
+            display: none;
+            width: 100%;
+            height: auto;
         }
 
         .tab-button {
@@ -282,16 +292,21 @@
                 <h2>Previous Ingredients</h2>
                 <p>Here you can review previously added ingredients.</p>
             </div>
-            <div id="nutrition-scanner" class="tab-content">
-                <h2>Scan Nutrition Facts</h2>
-                <!-- Barcode Scanner -->
-                <button onclick="startScanner()">Start Barcode Scanner</button>
-                <video id="scanner" style="width: 100%; display: none;"></video>
+            <div id="nutrition-scanner" class="tab-content active">
+                <h2>Capture Nutrition Facts</h2>
+                
+                <!-- Camera Access to Capture Image -->
+                <button onclick="startCamera()">Start Camera</button>
+                <video id="video" width="100%" height="auto" style="display: none;" autoplay></video>
+                <canvas id="canvas" width="100%" height="auto" style="display: none;"></canvas>
+                <button onclick="captureImage()">Capture Image</button>
                 <p id="scanner-result"></p>
-            
-                <!-- OCR for Nutrition Label -->
-                <h3>OR Upload Nutrition Label</h3>
-                <input type="file" id="label-upload" accept="image/*" onchange="scanLabel()">
+                
+                <!-- Display captured image -->
+                <img id="image-capture" src="" alt="Captured Image" />
+
+                <!-- OCR Processing -->
+                <h3>Process Nutrition Label with OCR</h3>
                 <p id="ocr-result"></p>
             </div>           
         </div>
@@ -328,6 +343,10 @@
         let proteinData = []; // Store total protein data for the graph
         let recipeCalories = 0;
         let recipeProtein = 0;
+        let video = document.getElementById("video");
+        let canvas = document.getElementById("canvas");
+        let context = canvas.getContext("2d");
+        let imageCapture = document.getElementById("image-capture");
 
         const ctx = document.getElementById('calorie-chart').getContext('2d');
         const calorieChart = new Chart(ctx, {
@@ -379,87 +398,52 @@
             }
         });
 
-        function scanLabel() {
-            const file = document.getElementById('label-upload').files[0];
+        function startCamera() {
+            // Access the camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    video.style.display = 'block'; // Show video element
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(function (err) {
+                    console.log("Error accessing camera: " + err);
+                    alert("Error accessing camera.");
+                });
+        }
+
+        function captureImage() {
+            // Capture the frame from the video stream
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Display the captured image
+            let dataUrl = canvas.toDataURL();
+            imageCapture.src = dataUrl;
+            imageCapture.style.display = 'block'; // Show captured image
+
+            // Process the captured image with OCR
+            processOCR(dataUrl);
+        }
+
+        function processOCR(imageUrl) {
             const resultElement = document.getElementById('ocr-result');
 
-            if (!file) {
-                alert('Please upload an image.');
-                return;
-            }
+            resultElement.textContent = 'Processing image...';
 
-            resultElement.textContent = 'Processing...';
-
-            Tesseract.recognize(file, 'eng')
-                .then(({ data: { text } }) => {
-                    resultElement.textContent = `Extracted Text:\n${text}`;
-                    // Optionally, implement parsing logic to extract calories, protein, etc.
-                })
-                .catch(err => {
-                    console.error('Error with OCR:', err);
-                    resultElement.textContent = 'Error processing image.';
-                });
-        }
-
-        function startScanner() {
-            const scanner = document.getElementById('scanner');
-            const scannerResult = document.getElementById('scanner-result');
-
-            // Display the scanner
-            scanner.style.display = 'block';
-            scannerResult.textContent = 'Initializing scanner...';
-
-            // Initialize Quagga with error logging
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: scanner, // Attach the video stream to the scanner element
-                    constraints: {
-                        facingMode: "environment" // Use the rear camera
-                    }
-                },
-                decoder: {
-                    readers: ["ean_reader"] // Support EAN-13 barcodes
-                }
-            }, function (err) {
-                if (err) {
-                    console.error("Quagga initialization error:", err);
-                    scannerResult.textContent = "Error initializing scanner. Please check the console for details.";
-                    return;
-                }
-                
-                // Start the scanner if there are no initialization errors
-                console.log("Quagga initialized successfully");
-                Quagga.start();
+            // Use Tesseract.js to extract text from the image
+            Tesseract.recognize(imageUrl, 'eng', {
+                logger: m => console.log(m)
+            })
+            .then(({ data: { text } }) => {
+                resultElement.textContent = `Extracted Text:\n${text}`;
+            })
+            .catch(err => {
+                console.error('Error with OCR:', err);
+                resultElement.textContent = 'Error processing image.';
             });
-
-            // Event listener for barcode detection
-            Quagga.onDetected(function (result) {
-                const code = result.codeResult.code;
-                console.log('Barcode detected:', code);
-                scannerResult.textContent = `Barcode detected: ${code}`;
-                Quagga.stop(); // Stop scanning once a barcode is detected
-                scanner.style.display = 'none'; // Hide the scanner video
-            });
-
-            // Log any issues with the camera access
-            navigator.mediaDevices.enumerateDevices()
-                .then(devices => {
-                    const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                    if (videoDevices.length === 0) {
-                        scannerResult.textContent = 'No video devices found!';
-                        console.error('No video devices found.');
-                    } else {
-                        console.log('Video devices:', videoDevices);
-                    }
-                })
-                .catch(err => {
-                    console.error('Error accessing media devices:', err);
-                    scannerResult.textContent = 'Error accessing media devices.';
-                });
         }
-
 
         function addRecipe() {
             const recipeName = document.getElementById('recipe-name').value;
