@@ -26,6 +26,52 @@
             margin: auto;
         }
 
+        #tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1rem;
+        }
+
+        #new-food {
+            color:white;
+        }
+
+        #new-ingredients {
+            color:white;
+        }
+
+        #previous-food {
+            color:white;
+        }
+
+        #previous-ingredients {
+            color:white;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 0.5rem;
+            background-color: #202030;
+            color: white;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .tab-button.active {
+            background-color: #130080;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+
         .form-group {
             margin-bottom: 1rem;
         }
@@ -33,6 +79,7 @@
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
+            color: white;
         }
 
         .form-group input {
@@ -97,6 +144,36 @@
             max-width: 100%;
             margin-top: 2rem;
         }
+
+        #recipe-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        #recipe-table th, #recipe-table td {
+            border: 1px solid #101018;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        #recipe-table th {
+            background-color: #202030;
+        }
+
+        #recipe-table button {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        #recipe-table button:hover {
+            background-color: #c9302c;
+        }
+
     </style>
 </head>
 <body>
@@ -104,25 +181,94 @@
         <h1>Calorie Tracker</h1>
     </header>
     <main>
-        <div class="form-group">
-            <label for="time-item">Time</label>
-            <input type="time" id="time" placeholder="Enter Time">
-        </div> 
-        <div class="form-group">
-            <label for="food-item">Food Item</label>
-            <input type="text" id="food-item" placeholder="Enter food name">
+        <div id="tabs">
+            <button class="tab-button active" onclick="showTab(event, 'new-food')">Add Food</button>
+            <button class="tab-button" onclick="showTab(event, 'new-ingredients')">Add Ingredients</button>
+            <button class="tab-button" onclick="showTab(event, 'previous-food')">Add Previous Food</button>
+            <button class="tab-button" onclick="showTab(event, 'previous-ingredients')">Add Previous Ingredients</button>
         </div>
-        <div class="form-group">
-            <label for="calories">Calories</label>
-            <input type="number" id="calories" placeholder="Enter calorie count">
+        <div id="tab-contents">
+            <!-- New Food Section -->
+            <div id="new-food" class="tab-content active">
+                <h2>Add Food</h2>
+                <div class="form-group">
+                    <label for="time">Time</label>
+                    <input type="time" id="time" placeholder="Enter Time">
+                </div>
+                <div class="form-group">
+                    <label for="food-item">Food Item</label>
+                    <input type="text" id="food-item" placeholder="Enter food name">
+                </div>
+                <div class="form-group">
+                    <label for="calories">Calories</label>
+                    <input type="number" id="calories" placeholder="Enter calorie count">
+                </div>
+                <div class="form-group">
+                    <label for="protein">Protein</label>
+                    <input type="number" id="protein" placeholder="Enter protein amount (in grams)">
+                </div>
+                <button onclick="addCalorie()">Add Food</button>
+                <button onclick="clearHistory()">Clear History</button>
+            </div>
+    
+            <!-- New Ingredients Section -->
+            <div id="new-ingredients" class="tab-content">
+                <h2>Add New Ingredients</h2>
+                <div class="form-group">
+                    <label for="ingredient-name">Ingredient Name</label>
+                    <input type="text" id="ingredient-name" placeholder="Enter ingredient name">
+                </div>
+                <div class="form-group">
+                    <label for="ingredient-calories">Calories</label>
+                    <input type="number" id="ingredient-calories" placeholder="Enter calorie count">
+                </div>
+                <div class="form-group">
+                    <label for="ingredient-protein">Protein</label>
+                    <input type="number" id="ingredient-protein" placeholder="Enter protein ammount (in grams)">
+                </div>
+                <button onclick="addIngredient()">Add Ingredient</button>
+                <div class="form-group">
+                    <label for="recipe-name">Recipe Name</label>
+                    <input type="text" id="recipe-name" placeholder="Enter recipe name">
+                </div>
+                <div class="form-group">
+                    <label for="time">Time</label>
+                    <input type="time" id="recipe-time" placeholder="Enter Time">
+                </div>
+                <button onclick="addRecipe()">Add Recipe</button>
+                <button onclick="clearHistory()">Clear History</button>
+                <div id="stats">
+                    <h2>Recipe</h2>
+                    <p>Recipe Calories: <span id="recipe-calories">0</span></p>
+                    <p>Recipe Protein: <span id="recipe-protein">0</span></p>
+                    <table id="recipe-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Calories</th>
+                                <th>Protein</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recipe-rows">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    
+            <!-- Previous Food Section -->
+            <div id="previous-food" class="tab-content">
+                <h2>Previous Food</h2>
+                <p>Here you can review previously added food items.</p>
+            </div>
+    
+            <!-- Previous Ingredients Section -->
+            <div id="previous-ingredients" class="tab-content">
+                <h2>Previous Ingredients</h2>
+                <p>Here you can review previously added ingredients.</p>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="protein">Protein</label>
-            <input type="number" id="protein" placeholder="Enter protein amount (in grams)">
-        </div>
-        <button onclick="addCalorie()">Add</button>
-        <button onclick="clearHistory()">Clear History</button>
-
+    
         <div id="stats">
             <h2>Statistics</h2>
             <p>Total Calories: <span id="total-calories">0</span></p>
@@ -153,6 +299,8 @@
         let timeLabels = []; // Store time labels for the graph
         let calorieData = []; // Store total calories data for the graph
         let proteinData = []; // Store total protein data for the graph
+        let recipeCalories = 0;
+        let recipeProtein = 0;
 
         const ctx = document.getElementById('calorie-chart').getContext('2d');
         const calorieChart = new Chart(ctx, {
@@ -204,38 +352,172 @@
             }
         });
 
+        function addRecipe() {
+            const recipeName = document.getElementById('recipe-name').value;
+            const calories = recipeCalories;
+            const protein = recipeProtein;
+            const time = document.getElementById('recipe-time').value; 
+
+            if (!time || !recipeName || isNaN(calories) || calories < 0 || isNaN(protein) || protein < 0) {
+                alert('Please enter valid inputs.');
+                return;
+            }
+
+            totalCalories += calories;
+            totalProtein += protein;
+
+            document.getElementById('total-calories').textContent = totalCalories;
+            document.getElementById('total-protein').textContent = totalProtein;
+
+            const tableRow = document.createElement('tr');
+            tableRow.setAttribute('draggable', 'true');
+            tableRow.innerHTML = `<td>${time}</td><td>${recipeName}</td><td>${calories}</td><td>${protein}</td><td><button onclick="removeRow(event)">Remove</button></td>`;
+            document.getElementById('calorie-rows').appendChild(tableRow);
+
+            // Update the graph data arrays
+            timeLabels.push(time);
+            calorieData.push(totalCalories);
+            proteinData.push(totalProtein);
+
+            calorieChart.update();
+            proteinChart.update();
+
+            // Clear input fields
+            document.getElementById('recipe-name').value = '';
+            document.getElementById('recipe-time').value = '';
+
+            // Reset recipe totals
+            recipeCalories = 0;
+            recipeProtein = 0;
+
+            document.getElementById('recipe-calories').textContent = recipeCalories;
+            document.getElementById('recipe-protein').textContent = recipeProtein;
+
+            const recipeRows = document.getElementById('recipe-rows');
+            while (recipeRows.firstChild) {
+                recipeRows.removeChild(recipeRows.firstChild);
+            }
+
+            saveData();
+        }
+
+        function addIngredient() {
+            const ingredient = document.getElementById('ingredient-name').value;
+            const calories = parseInt(document.getElementById('ingredient-calories').value, 10);
+            const protein = parseInt(document.getElementById('ingredient-protein').value, 10);
+
+            if (!ingredient || isNaN(calories) || calories < 0 || isNaN(protein) || protein < 0) {
+                alert('Please enter valid inputs.');
+                return;
+            }
+
+            recipeCalories += calories;
+            recipeProtein += protein;
+
+            document.getElementById('recipe-calories').textContent = recipeCalories;
+            document.getElementById('recipe-protein').textContent = recipeProtein;
+
+            const tableRow = document.createElement('tr');
+            tableRow.setAttribute('draggable', 'true');
+            tableRow.innerHTML = `<td>${ingredient}</td><td>${calories}</td><td>${protein}</td><td><button onclick="removeRow(event)">Remove</button></td>`;
+            document.getElementById('recipe-rows').appendChild(tableRow);
+
+            document.getElementById('ingredient-name').value = '';
+            document.getElementById('ingredient-calories').value = '';
+            document.getElementById('ingredient-protein').value = '';
+
+            saveData();
+        }
+
+        function showTab(event, tabId) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => button.classList.remove('active'));
+
+            // Show the selected tab content and set the active button
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function clearHistory() {
+            totalCalories = 0;
+            totalProtein = 0;
+
+            document.getElementById('total-calories').textContent = totalCalories;
+            document.getElementById('total-protein').textContent = totalProtein;
+
+            const calorieRows = document.getElementById('calorie-rows');
+            while (calorieRows.firstChild) {
+                calorieRows.removeChild(calorieRows.firstChild);
+            }
+
+            const recipeRows = document.getElementById('recipe-rows');
+            while (recipeRows.firstChild) {
+                recipeRows.removeChild(recipeRows.firstChild);
+            }
+
+            timeLabels = [];
+            calorieData = [];
+            proteinData = [];
+            calorieChart.data.labels = timeLabels;
+            calorieChart.data.datasets[0].data = calorieData;
+            calorieChart.update();
+
+            proteinChart.data.labels = timeLabels;
+            proteinChart.data.datasets[0].data = proteinData;
+            proteinChart.update();
+
+            localStorage.removeItem('calorieTrackerData');
+        }
+
         // Load history from localStorage
         function loadHistory() {
             const data = JSON.parse(localStorage.getItem('calorieTrackerData')) || {
                 totalCalories: 0,
                 totalProtein: 0,
-                history: []
+                foodHistory: [],
+                ingredientHistory: []
             };
 
+            // Set total values
             totalCalories = data.totalCalories;
             totalProtein = data.totalProtein;
             document.getElementById('total-calories').textContent = totalCalories;
             document.getElementById('total-protein').textContent = totalProtein;
 
-            // Reset chart data arrays to avoid duplicates
+            // Load food history into the table
+            data.foodHistory.forEach(item => {
+                const tableRow = document.createElement('tr');
+                tableRow.innerHTML = `<td>${item.time}</td><td>${item.food}</td><td>${item.calories}</td><td>${item.protein}</td><td><button onclick="removeRow(event)">Remove</button></td>`;
+                document.getElementById('calorie-rows').appendChild(tableRow);
+            });
+
+            // Load ingredient history into the recipe table
+            data.ingredientHistory.forEach(item => {
+                const tableRow = document.createElement('tr');
+                tableRow.innerHTML = `<td>${item.ingredient}</td><td>${item.calories}</td><td>${item.protein}</td><td><button onclick="removeRow(event)">Remove</button></td>`;
+                document.getElementById('recipe-rows').appendChild(tableRow);
+            });
+
+            // Update the graphs
+            updateGraphsFromHistory(data.foodHistory);
+        }
+
+        function updateGraphsFromHistory(history) {
             timeLabels = [];
             calorieData = [];
             proteinData = [];
 
-            data.history.forEach(item => {
-                // Add items to the table with a "Remove" button and make rows draggable
-                const tableRow = document.createElement('tr');
-                tableRow.setAttribute('draggable', 'true');
-                tableRow.innerHTML = `<td>${item.time}</td><td>${item.food}</td><td>${item.calories}</td><td>${item.protein}</td><td><button onclick="removeRow(event)">Remove</button></td>`;
-                document.getElementById('calorie-rows').appendChild(tableRow);
-
-                // Update the graph data arrays
+            history.forEach(item => {
                 timeLabels.push(item.time);
-                calorieData.push(item.calories);  // Use individual calories here
-                proteinData.push(item.protein);   // Use individual protein here
+                calorieData.push(item.calories);
+                proteinData.push(item.protein);
             });
 
-            // Update the chart with the loaded data
             calorieChart.data.labels = timeLabels;
             calorieChart.data.datasets[0].data = calorieData;
             calorieChart.update();
@@ -247,8 +529,9 @@
 
         // Save data to localStorage
         function saveData() {
-            const historyRows = Array.from(document.querySelectorAll('#calorie-rows tr'));
-            const history = historyRows.map(row => {
+            // Gather food history
+            const foodRows = Array.from(document.querySelectorAll('#calorie-rows tr'));
+            const foodHistory = foodRows.map(row => {
                 const cells = row.querySelectorAll('td');
                 return {
                     time: cells[0].textContent,
@@ -258,10 +541,23 @@
                 };
             });
 
+            // Gather ingredient history
+            const ingredientRows = Array.from(document.querySelectorAll('#recipe-rows tr'));
+            const ingredientHistory = ingredientRows.map(row => {
+                const cells = row.querySelectorAll('td');
+                return {
+                    ingredient: cells[0].textContent,
+                    calories: parseInt(cells[1].textContent, 10),
+                    protein: parseInt(cells[2].textContent, 10)
+                };
+            });
+
+            // Save everything to localStorage
             const data = {
                 totalCalories,
                 totalProtein,
-                history
+                foodHistory,
+                ingredientHistory,
             };
 
             localStorage.setItem('calorieTrackerData', JSON.stringify(data));
