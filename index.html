@@ -33,15 +33,11 @@
             margin-bottom: 1rem;
         }
 
-        #nutrition-scanner {
-            color:white;
-        }
-
         #new-food {
             color:white;
         }
 
-        #new-ingredients {
+        #new-recipe {
             color:white;
         }
 
@@ -51,25 +47,6 @@
 
         #previous-ingredients {
             color:white;
-        }
-
-        #scanner {
-            border: 2px solid #130080;
-            border-radius: 8px;
-            margin-top: 1rem;
-        }
-
-        #ocr-result, #scanner-result {
-            margin-top: 20px;
-            font-weight: bold;
-            color: white;
-        }
-
-        #image-capture {
-            margin-top: 20px;
-            display: none;
-            width: 100%;
-            height: auto;
         }
 
         .tab-button {
@@ -207,10 +184,9 @@
     <main>
         <div id="tabs">
             <button class="tab-button active" onclick="showTab(event, 'new-food')">Add Food</button>
-            <button class="tab-button" onclick="showTab(event, 'new-ingredients')">Add Ingredients</button>
-            <button class="tab-button" onclick="showTab(event, 'previous-food')">Add Previous Food</button>
-            <button class="tab-button" onclick="showTab(event, 'previous-ingredients')">Add Previous Ingredients</button>
-            <button class="tab-button" onclick="showTab(event, 'nutrition-scanner')">Nutrition Fact Scanner</button>
+            <button class="tab-button" onclick="showTab(event, 'new-recipe')">Add Ingredients</button>
+            <!--<button class="tab-button" onclick="showTab(event, 'previous-food')">Add Previous Food</button>
+            <button class="tab-button" onclick="showTab(event, 'previous-ingredients')">Add Previous Ingredients</button>-->
         </div>
         <div id="tab-contents">
             <!-- New Food Section -->
@@ -237,31 +213,21 @@
             </div>
     
             <!-- New Ingredients Section -->
-            <div id="new-ingredients" class="tab-content">
+            <div id="new-recipe" class="tab-content">
                 <h2>Add New Ingredients</h2>
                 <div class="form-group">
-                    <label for="ingredient-name">Ingredient Name</label>
-                    <input type="text" id="ingredient-name" placeholder="Enter ingredient name">
+                    <label for="recipe-name">Recipe Name</label>
+                    <input type="text" id="recipe-name" placeholder="Enter ingredient name">
                 </div>
                 <div class="form-group">
-                    <label for="ingredient-calories">Calories</label>
-                    <input type="number" id="ingredient-calories" placeholder="Enter calorie count">
+                    <label for="recipe-calories">Calories</label>
+                    <input type="number" id="recipe-calories" placeholder="Enter calorie count">
                 </div>
                 <div class="form-group">
-                    <label for="ingredient-protein">Protein</label>
-                    <input type="number" id="ingredient-protein" placeholder="Enter protein ammount (in grams)">
+                    <label for="recipe-protein">Protein</label>
+                    <input type="number" id="recipe-protein" placeholder="Enter protein ammount (in grams)">
                 </div>
                 <button onclick="addIngredient()">Add Ingredient</button>
-                <div class="form-group">
-                    <label for="recipe-name">Recipe Name</label>
-                    <input type="text" id="recipe-name" placeholder="Enter recipe name">
-                </div>
-                <div class="form-group">
-                    <label for="time">Time</label>
-                    <input type="time" id="recipe-time" placeholder="Enter Time">
-                </div>
-                <button onclick="addRecipe()">Add Recipe</button>
-                <button onclick="clearHistory()">Clear History</button>
                 <div id="stats">
                     <h2>Recipe</h2>
                     <p>Recipe Calories: <span id="recipe-calories">0</span></p>
@@ -279,36 +245,34 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="form-group">
+                    <label for="recipe-name">Recipe Name</label>
+                    <input type="text" id="recipe-name" placeholder="Enter recipe name">
+                </div>
+                <div class="form-group">
+                    <label for="time">Time</label>
+                    <input type="time" id="recipe-time" placeholder="Enter Time">
+                </div>
+                <button onclick="addRecipe()">Add Recipe</button>
+                <button onclick="clearHistory()">Clear History</button>
             </div>
     
             <!-- Previous Food Section -->
             <div id="previous-food" class="tab-content">
                 <h2>Previous Food</h2>
-                <p>Here you can review previously added food items.</p>
+                <label for="food-history-dropdown">Select from History:</label>
+                <select id="food-history-dropdown">
+                    <option value="" disabled selected>Choose an item</option>
+                </select>
             </div>
-    
-            <!-- Previous Ingredients Section -->
+            
             <div id="previous-ingredients" class="tab-content">
                 <h2>Previous Ingredients</h2>
-                <p>Here you can review previously added ingredients.</p>
-            </div>
-            <div id="nutrition-scanner" class="tab-content active">
-                <h2>Capture Nutrition Facts</h2>
-                
-                <!-- Camera Access to Capture Image -->
-                <button onclick="startCamera()">Start Camera</button>
-                <video id="video" width="100%" height="auto" style="display: none;" autoplay></video>
-                <canvas id="canvas" width="100%" height="auto" style="display: none;"></canvas>
-                <button onclick="captureImage()">Capture Image</button>
-                <p id="scanner-result"></p>
-                
-                <!-- Display captured image -->
-                <img id="image-capture" src="" alt="Captured Image" />
-
-                <!-- OCR Processing -->
-                <h3>Process Nutrition Label with OCR</h3>
-                <p id="ocr-result"></p>
-            </div>           
+                <label for="ingredient-history-dropdown">Select from History:</label>
+                <select id="ingredient-history-dropdown">
+                    <option value="" disabled selected>Choose an ingredient</option>
+                </select>
+            </div>          
         </div>
     
         <div id="stats">
@@ -343,10 +307,6 @@
         let proteinData = []; // Store total protein data for the graph
         let recipeCalories = 0;
         let recipeProtein = 0;
-        let video = document.getElementById("video");
-        let canvas = document.getElementById("canvas");
-        let context = canvas.getContext("2d");
-        let imageCapture = document.getElementById("image-capture");
 
         const ctx = document.getElementById('calorie-chart').getContext('2d');
         const calorieChart = new Chart(ctx, {
@@ -397,57 +357,6 @@
                 }
             }
         });
-
-        function startCamera() {
-            // Access the rear camera
-            navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: "environment" // This forces the rear camera to be used
-                }
-            })
-            .then(function (stream) {
-                video.style.display = 'block'; // Show video element
-                video.srcObject = stream;
-                video.play();
-            })
-            .catch(function (err) {
-                console.log("Error accessing camera: " + err);
-                alert("Error accessing camera.");
-            });
-        }
-
-        function captureImage() {
-            // Capture the frame from the video stream
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Display the captured image
-            let dataUrl = canvas.toDataURL();
-            imageCapture.src = dataUrl;
-            imageCapture.style.display = 'block'; // Show captured image
-
-            // Process the captured image with OCR
-            processOCR(dataUrl);
-        }
-
-        function processOCR(imageUrl) {
-            const resultElement = document.getElementById('ocr-result');
-
-            resultElement.textContent = 'Processing image...';
-
-            // Use Tesseract.js to extract text from the image
-            Tesseract.recognize(imageUrl, 'eng', {
-                logger: m => console.log(m)
-            })
-            .then(({ data: { text } }) => {
-                resultElement.textContent = `Extracted Text:\n${text}`;
-            })
-            .catch(err => {
-                console.error('Error with OCR:', err);
-                resultElement.textContent = 'Error processing image.';
-            });
-        }
 
         function addRecipe() {
             const recipeName = document.getElementById('recipe-name').value;
@@ -609,10 +518,16 @@
             calorieData = [];
             proteinData = [];
 
+            let runningCalories = 0;
+            let runningProtein = 0;
+
             history.forEach(item => {
                 timeLabels.push(item.time);
-                calorieData.push(item.calories);
-                proteinData.push(item.protein);
+                runningCalories += item.calories;
+                runningProtein += item.protein;
+
+                calorieData.push(runningCalories);
+                proteinData.push(runningProtein);
             });
 
             calorieChart.data.labels = timeLabels;
