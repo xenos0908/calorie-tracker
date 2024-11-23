@@ -404,47 +404,59 @@
 
             // Display the scanner
             scanner.style.display = 'block';
-            scannerResult.textContent = 'Scanning...';
+            scannerResult.textContent = 'Initializing scanner...';
 
+            // Initialize Quagga with error logging
             Quagga.init({
                 inputStream: {
                     name: "Live",
                     type: "LiveStream",
-                    target: scanner // Attach the video stream to the scanner element
+                    target: scanner, // Attach the video stream to the scanner element
+                    constraints: {
+                        facingMode: "environment" // Use the rear camera
+                    }
                 },
                 decoder: {
                     readers: ["ean_reader"] // Support EAN-13 barcodes
                 }
             }, function (err) {
                 if (err) {
-                    console.error(err);
-                    scannerResult.textContent = 'Error initializing scanner.';
+                    console.error("Quagga initialization error:", err);
+                    scannerResult.textContent = "Error initializing scanner. Please check the console for details.";
                     return;
                 }
+                
+                // Start the scanner if there are no initialization errors
+                console.log("Quagga initialized successfully");
                 Quagga.start();
             });
 
-            // Process the detected barcode
+            // Event listener for barcode detection
             Quagga.onDetected(function (result) {
                 const code = result.codeResult.code;
+                console.log('Barcode detected:', code);
                 scannerResult.textContent = `Barcode detected: ${code}`;
-                Quagga.stop();
-                scanner.style.display = 'none';
-
-                // Fetch nutrition data from Open Food Facts
-                fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 1) {
-                            const product = data.product;
-                            alert(`Product: ${product.product_name}\nCalories: ${product.nutriments.energy_kcal} kcal\nProtein: ${product.nutriments.proteins} g`);
-                        } else {
-                            alert('Product not found.');
-                        }
-                    })
-                    .catch(err => console.error('Error fetching product data:', err));
+                Quagga.stop(); // Stop scanning once a barcode is detected
+                scanner.style.display = 'none'; // Hide the scanner video
             });
+
+            // Log any issues with the camera access
+            navigator.mediaDevices.enumerateDevices()
+                .then(devices => {
+                    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                    if (videoDevices.length === 0) {
+                        scannerResult.textContent = 'No video devices found!';
+                        console.error('No video devices found.');
+                    } else {
+                        console.log('Video devices:', videoDevices);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error accessing media devices:', err);
+                    scannerResult.textContent = 'Error accessing media devices.';
+                });
         }
+
 
         function addRecipe() {
             const recipeName = document.getElementById('recipe-name').value;
